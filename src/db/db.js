@@ -7,6 +7,13 @@ export const signUp = (db, userDetails) => {
   return dbResponse.id;
 };
 
+export const signIn = (db, userDetails) => {
+  const { id, password } = userDetails;
+  const selectStatement = `SELECT * FROM user WHERE id = ? AND password = ?`;
+  const user = db.prepare(selectStatement).get(id, password);
+  return user;
+};
+
 export const init = (db) => {
   db.exec(`CREATE TABLE IF NOT EXISTS user(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
