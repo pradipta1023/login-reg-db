@@ -58,3 +58,19 @@ export const getTodos = async (details) => {
 
   return { body: await response.text(), status: response.status };
 };
+
+export const deleteTodos = async (details) => {
+  const response = await fetch("http://localhost:8000/todo/delete", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(details),
+  });
+
+  if (response.status === 200) {
+    return { body: await response.json(), status: response.status };
+  }
+
+  return { body: await response.text(), status: response.status };
+};

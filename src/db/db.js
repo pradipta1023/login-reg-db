@@ -12,9 +12,7 @@ export const addTodo = (db, todoDetails) => {
       isError: false,
       body: { ["todo id"]: response.todo_id, name: response.name },
     };
-  } catch (error) {
-    console.log(error);
-
+  } catch {
     return { isError: true, body: `${user_id} is not a valid user id` };
   }
 };
@@ -24,25 +22,27 @@ export const getTodos = (db, user) => {
   const selectStatement = `SELECT * FROM todo WHERE user_id = ?`;
   try {
     const response = db.prepare(selectStatement).all(user_id);
-    const isError = !response;
-    const body = response || `No todos found`;
+    const isError = !response.length;
+    const body = response.length !== 0 ? response : `No todos found`;
     return { isError, body };
   } catch (error) {
     return { isError: true, body: `An error occurred: ${error.message}` };
   }
 };
 
-export const deleteTodo = (db, user) => {
-  const { user_id, todo_id } = user;
-  const selectStatement =
-    `DELETE FROM todo WHERE user_id = ? AND todo_id = ? RETURNING *`;
+export const deleteTodos = (db, todoDetails) => {
+  const { user_id, idsToDelete } = todoDetails;
   try {
-    const response = db.prepare(selectStatement).get(user_id, todo_id);
+    const response = db.prepare(
+      `DELETE FROM todo WHERE user_id = ${user_id} AND todo_id in (
+      ${[...idsToDelete]}
+      ) RETURNING *`,
+    ).all();
     return {
-      isError: !response,
-      body: response || "Invalid user id or todo id",
+      isError: !response.length,
+      body: response.length !== 0 ? response : "Invalid user id or todo id",
     };
-  } catch {
+  } catch (error) {
     return { isError: true, body: `An error occurred: ${error.message}` };
   }
 };
