@@ -1,56 +1,30 @@
-export const handleAddTodo = (todoDetails, { storage, storageFns }) => {
+export const handleAddTodo = async (context) => {
+  const { storage, storageFns } = context.get("storage-configs");
+  const todoDetails = await context.req.parseBody();
   const response = storageFns.addTodo(storage, todoDetails);
-  if (response.isError) {
-    return new Response(response.body, {
-      headers: {
-        "content-type": "text/plain",
-      },
-      status: 404,
-    });
-  }
 
-  return new Response(JSON.stringify(response.body), {
-    headers: {
-      "content-type": "application/json",
-    },
-    status: 200,
-  });
+  return response.isError
+    ? context.text(response.body, 404)
+    : context.json(response.body, 200);
 };
 
-export const handleGetTodos = (todoDetails, { storage, storageFns }) => {
-  const response = storageFns.getTodos(storage, todoDetails);
-  if (response.isError) {
-    return new Response(response.body, {
-      headers: {
-        "content-type": "text/plain",
-      },
-      status: 404,
-    });
-  }
+export const handleGetTodos = async (context) => {
+  const { storage, storageFns } = context.get("storage-configs");
+  const user = await context.req.parseBody();
+  const response = storageFns.getTodos(storage, user);
 
-  return new Response(JSON.stringify(response.body), {
-    headers: {
-      "content-type": "application/json",
-    },
-    status: 200,
-  });
+  return response.isError
+    ? context.text(response.body, 400)
+    : context.json(response.body, 200);
 };
 
-export const handleDeleteTodos = (todoDetails, { storage, storageFns }) => {
-  const response = storageFns.deleteTodos(storage, todoDetails);
-  if (response.isError) {
-    return new Response(response.body, {
-      headers: {
-        "content-type": "text/plain",
-      },
-      status: 404,
-    });
-  }
+export const handleDeleteTodos = async (context) => {
+  const { storage, storageFns } = context.get("storage-configs");
+  const todo = await context.req.json();
+  console.log({ todo });
+  const response = storageFns.deleteTodos(storage, todo);
 
-  return new Response(JSON.stringify(response.body), {
-    headers: {
-      "content-type": "application/json",
-    },
-    status: 200,
-  });
+  return response.isError
+    ? context.text(response.body, 400)
+    : context.json(response.body, 200);
 };

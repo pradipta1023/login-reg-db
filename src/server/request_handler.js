@@ -4,20 +4,27 @@ import {
   handleGetTodos,
 } from "./todo_controller.js";
 import { handleSignIn, handleSignUp } from "./user_controller.js";
+import { Hono } from "hono";
+import { logger } from "hono/logger";
+
+export const createApp = (storageConfigs) => {
+  const app = new Hono();
+  app.use((context, next) => {
+    context.set("storage-configs", storageConfigs);
+    return next();
+  });
+  app.use(logger());
+  app.post("user/reg", handleSignUp);
+  app.post("user/login", handleSignIn);
+  app.post("/todo/create", handleAddTodo);
+  app.post("/todo/get", handleGetTodos);
+  app.post("/todo/delete", handleDeleteTodos);
+  return app;
+};
 
 export const handleUser = async (request, { storage, storageFns }) => {
   const path = new URL(request.url).pathname;
   console.log({ method: request.method, path });
-
-  if (path === "/reg" && request.method === "POST") {
-    const userDetails = await request.json();
-    return await handleSignUp(userDetails, { storage, storageFns });
-  }
-
-  if (path === "/login" && request.method === "POST") {
-    const userDetails = await request.json();
-    return await handleSignIn(userDetails, { storage, storageFns });
-  }
 
   if (path === "/todo/create" && request.method === "POST") {
     const todoDetails = await request.json();

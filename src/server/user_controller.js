@@ -1,28 +1,17 @@
-export const handleSignUp = (details, { storage, storageFns }) => {
+export const handleSignUp = async (context) => {
+  const { storageFns, storage } = context.get("storage-configs");
+  const details = await context.req.parseBody();
   const id = storageFns.signUp(storage, details);
-  return new Response(JSON.stringify({ id }), {
-    headers: {
-      "content-type": "application/json",
-    },
-    status: 200,
-  });
+
+  return context.json({ id }, 201);
 };
 
-export const handleSignIn = (details, { storage, storageFns }) => {
+export const handleSignIn = async (context) => {
+  const { storageFns, storage } = context.get("storage-configs");
+  const details = await context.req.parseBody();
   const response = storageFns.signIn(storage, details);
-  if (response.isError) {
-    return new Response(response.body, {
-      headers: {
-        "content-type": "text/plain",
-      },
-      status: 404,
-    });
-  }
 
-  return new Response(JSON.stringify(response.body), {
-    headers: {
-      "content-type": "application/json",
-    },
-    status: 200,
-  });
+  return response.isError
+    ? context.text(response.body, 404)
+    : context.json(response.body, 200);
 };
